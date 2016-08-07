@@ -1,0 +1,20 @@
+{
+  "name": "ipc-emitter",
+  "version": "0.1.0",
+  "description": "EventEmitter for IPC connected node apps.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./node_modules/.bin/standard && node node_modules/.bin/mocha ./test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tabone/ipc-emitter"
+  },
+  "author": "Luca Tabone <taboneluca3@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^3.0.1",
+    "sinon": "^1.17.5",
+    "standard": "^7.1.2"
+  }
+}
