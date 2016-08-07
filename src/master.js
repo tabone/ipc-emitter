@@ -17,6 +17,13 @@ master.ack = function ack (...workers) {
   // is not initated yet, create it.
   if (this.__workers === undefined) this.__workers = []
 
+  // Store listener to be used in the workers 'message' event. This is done so
+  // that when a worker is forgotten, the listener can be referenced and removed
+  // without affecting other listeners registered.
+  if (this.__handlePayloadListener === undefined) {
+    this.__handlePayloadListener = handlePayload.bind(this)
+  }
+
   // Traverse the workers provided and include the valid child processes in the
   // workers list.
   workers.forEach((worker, index) => {
@@ -26,7 +33,7 @@ master.ack = function ack (...workers) {
     }
 
     // Listen for messages from the worker to be acknowledged.
-    worker.on('message', handlePayload.bind(this))
+    worker.on('message', this.__handlePayloadListener)
 
     // Include worker in the list of acknowledged workers.
     this.__workers.push(worker)
@@ -47,6 +54,9 @@ master.forget = function forget (...workers) {
 
   // Traverse the specified workers and remove them from the acknowledged list.
   workers.forEach((worker) => {
+    // Remove the listeners created by the master IPC.
+    worker.removeListener('message', this.__handlePayloadListener)
+    // Remove from acknowledged workers.
     this.__workers.splice(this.__workers.indexOf(worker), 1)
   })
 

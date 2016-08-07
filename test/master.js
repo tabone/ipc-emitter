@@ -115,9 +115,12 @@ describe('Master Module', function () {
   describe('Scenario: Forgetting workers', function () {
     describe('Given a Master IPC-Emitter', function () {
       let master = null
+      let listener = null
 
       beforeEach(function () {
         ;({master} = ipce)
+        listener = sinon.stub()
+        master.on('click', listener)
       })
 
       describe('with a number of acknowledged workers', function () {
@@ -126,9 +129,9 @@ describe('Master Module', function () {
         let workerThree = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess()
-          workerTwo = utils.mockChildProcess()
-          workerThree = utils.mockChildProcess()
+          workerOne = utils.mockChildProcess(1)
+          workerTwo = utils.mockChildProcess(2)
+          workerThree = utils.mockChildProcess(3)
 
           master.ack(workerOne, workerTwo, workerThree)
         })
@@ -140,6 +143,41 @@ describe('Master Module', function () {
 
           it('should remove the forgotten workers processes from the list of acknowledged workers', function () {
             assert.deepStrictEqual(master.__workers, [workerTwo])
+          })
+
+          it('should stop listening for any events that the forgotten workers might emit', function () {
+            const payload = {
+              pid: workerOne.pid,
+              event: 'click'
+            }
+
+            workerOne.mockSend(JSON.stringify(payload))
+            workerThree.mockSend(JSON.stringify(payload))
+            assert.strictEqual(listener.called, false)
+          })
+        })
+      })
+
+      describe('with an acknowledged worker which has its own listeners registered to the \'message\' event', function () {
+        let workerOne = null
+        let listener = null
+
+        beforeEach(function () {
+          workerOne = utils.mockChildProcess(1)
+          listener = sinon.stub()
+          workerOne.on('message', listener)
+
+          master.ack(workerOne)
+        })
+
+        describe('when forgetting the worker', function () {
+          beforeEach(function () {
+            master.forget(workerOne)
+          })
+
+          it('should not affect the listeners which were not registered by the master ipc-emitter', function () {
+            workerOne.emit('message')
+            assert.strictEqual(listener.called, true)
           })
         })
       })
