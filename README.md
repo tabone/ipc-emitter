@@ -11,27 +11,26 @@
 const {master} = require('ipc-emitter')
 ```
 
-Master is an [EventEmitter](https://nodejs.org/api/events.html), with a few difference.
+Master is an [EventEmitter](https://nodejs.org/api/events.html), with a few differences.
 
 When it emits an event (using the [.emit()](https://nodejs.org/api/events.html#events_emitter_emit_eventname_arg1_arg2) function) apart from triggering its own listeners, it also notifies other acknowledged processes through the IPC Channel (using [process.send()](https://nodejs.org/api/process.html#process_process_send_message_sendhandle_options_callback) method).
 
-In addition to this, it also listens for events emitted by the acknowledged processes (by listening for their `message` event) so that triggers its own listeners and also notifies other acknowledged processes to trigger their own (note that the process which triggered the event is not notified).
+In addition to this, it also listens for events emitted by acknowledged processes (by listening for their `message` event) so that triggers its own listeners and also notifies other acknowledged processes to trigger their own (note that the process which triggered the event is not notified).
 
-> Getting a Master IPC-Emitter it will always return a new object.
+> When getting a Master IPC-Emitter will always return a new object.
 
 ### API
 #### .ack( [process](https://nodejs.org/api/process.html) [, [process](https://nodejs.org/api/process.html)[...] ] )
 Acknowledges a process. Doing so the Master:
 
 1. Will be listening for any events the newly acknowleged process might emit so that it can trigger its own listeners and notify other acknowledged processes.
-2. Will notify the newly acknowledged process of any events other acknowledged processes might emitted.
-
+2. Will notify the newly acknowledged process of any events emitted either the master or other acknowledged processes.
 
 #### .forget( [process](https://nodejs.org/api/process.html) [, [process](https://nodejs.org/api/process.html)[...] ] )
 Removes a process from the list of acknowledged processes. Doing so the master:
 
 1. Will stop listening for any events the newly forgotten process might emit.
-2. Will stop notifing the newly forgotten process of any events other acknowledged processes might emit.
+2. Will stop notifing the newly forgotten process of any events emitted either by the master or other acknowledged processes .
 
 ## Worker
 
@@ -39,11 +38,11 @@ Removes a process from the list of acknowledged processes. Doing so the master:
 const {worker} = require('ipc-emitter')
 ```
 
-Worker is an [EventEmitter](https://nodejs.org/api/events.html), with a few difference.
+Worker is an [EventEmitter](https://nodejs.org/api/events.html), with a few differences.
 
-When it emits an event (using the [.emit()](https://nodejs.org/api/events.html#events_emitter_emit_eventname_arg1_arg2) function) apart from triggering its own listeners, it also notifies its master process through the IPC Channel (using [process.send()](https://nodejs.org/api/process.html#process_process_send_message_sendhandle_options_callback) method). Doing this if the Master Process is using the Master IPC-Emitter, the event will be sent to all of its acknowledged workers.
+When it emits an event (using the [.emit()](https://nodejs.org/api/events.html#events_emitter_emit_eventname_arg1_arg2) function) apart from triggering its own listeners, it also notifies its master process through the IPC Channel (using [process.send()](https://nodejs.org/api/process.html#process_process_send_message_sendhandle_options_callback) method). Doing this if the Master Process is using the Master IPC-Emitter, the event will be echoed to all of the acknowledged workers.
 
-> Getting a Worker IPC-Emitter will always return the same object
+> When getting a Worker IPC-Emitter will always return the same object.
 
 ## Example
 ### boot.js
