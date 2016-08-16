@@ -46,7 +46,7 @@ worker.emit = function emit (ev, ...args) {
 
   // Send payload to master process to be retrieved and handled by the master
   // ipc-emitter.
-  process.send(JSON.stringify(payload))
+  process.send(payload)
 
   return this
 }

@@ -151,8 +151,8 @@ describe('Master Module', function () {
               event: 'click'
             }
 
-            workerOne.mockSend(JSON.stringify(payload))
-            workerThree.mockSend(JSON.stringify(payload))
+            workerOne.mockSend(payload)
+            workerThree.mockSend(payload)
             assert.strictEqual(listener.called, false)
           })
         })
@@ -231,7 +231,7 @@ describe('Master Module', function () {
             }
 
             ;[workerOne, workerTwo].forEach((worker) => {
-              const payload = JSON.parse(worker.send.getCall(0).args[0])
+              const payload = worker.send.getCall(0).args[0]
               assert.deepStrictEqual(payload, expectedPayload)
             })
           })
@@ -317,7 +317,7 @@ describe('Master Module', function () {
               args: [1, 2]
             }
 
-            workerOne.mockSend(JSON.stringify(payload))
+            workerOne.mockSend(payload)
           })
 
           it('should trigger the masters listeners for the event emitted', function () {
@@ -327,7 +327,7 @@ describe('Master Module', function () {
 
           it('should send the payload to the workers who did not create the event', function () {
             assert.strictEqual(workerTwo.send.calledOnce, true)
-            assert.strictEqual(workerTwo.send.getCall(0).args[0], JSON.stringify(payload))
+            assert.deepStrictEqual(workerTwo.send.getCall(0).args[0], payload)
           })
 
           it('should not send the payload to worker who created the event', function () {

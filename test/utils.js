@@ -6,11 +6,11 @@ const utils = require('../src/utils')
 
 describe('Utilities', function () {
   describe('Scenario: Parsing payload', function () {
-    describe('Given a non JSON parsable payload', function () {
+    describe('Given an invalid payload', function () {
       let payload = null
 
       beforeEach(function () {
-        payload = '{ test'
+        payload = '{ "event": "click" }'
       })
 
       describe('when parsing the payload', function () {
@@ -20,12 +20,12 @@ describe('Utilities', function () {
       })
     })
 
-    describe('Given a JSON parsable payload', function () {
+    describe('Given a valid payload', function () {
       let payload = null
 
       describe('without an \'event\' field', function () {
         beforeEach(function () {
-          payload = '{}'
+          payload = {}
         })
 
         describe('when parsing the payload', function () {
@@ -38,9 +38,7 @@ describe('Utilities', function () {
       describe('with an \'event\' field', function () {
         describe('and without an \'args\' field', function () {
           beforeEach(function () {
-            payload = JSON.stringify({
-              event: 'click'
-            })
+            payload.event = 'click'
           })
 
           describe('when parsing the payload', function () {
@@ -58,10 +56,8 @@ describe('Utilities', function () {
 
         describe('and with an non-array \'args\' field', function () {
           beforeEach(function () {
-            payload = JSON.stringify({
-              event: 'click',
-              arg: 1
-            })
+            payload.event = 'click'
+            payload.args = 1
           })
 
           describe('when parsing the payload', function () {
@@ -79,10 +75,8 @@ describe('Utilities', function () {
 
         describe('and with an array \'args\' field', function () {
           beforeEach(function () {
-            payload = JSON.stringify({
-              event: 'click',
-              args: [1, 2]
-            })
+            payload.event = 'click'
+            payload.args = [1, 2]
           })
 
           describe('when parsing the payload', function () {

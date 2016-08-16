@@ -5,7 +5,7 @@ module.exports = {
    * parsePayload parses and validates the provided payload. When a payload is
    * invalid this method returns null else it returns a object representation of
    * the payload. A payload is considered invalid if:
-   *   1. It is not a valid JSON.
+   *   1. It is not an object.
    *   2. It doesn't have an 'event' field.
    * In addition to this if a payload does not have an Array 'args' field it
    * creates one and defaults it to an empty array.
@@ -19,16 +19,9 @@ module.exports = {
    * @return {Object}       An object representation of the payload or null.
    */
   parsePayload (payload) {
-    // Try to parse the payload as JSON.
-    try {
-      payload = JSON.parse(payload)
-    } catch (e) {
-      // If payload is not a valid JSON, return null.
-      return null
-    }
-
-    // If payload doesn't have 'event' field, it is considered invalid.
-    if (payload.event === undefined) return null
+    // If payload isn't an object and/or doesn't have 'event' field, it is
+    // considered invalid.
+    if (typeof payload !== 'object' || payload.event === undefined) return null
 
     // If 'args' field is not an array, default it to an empty array.
     if (payload.args === undefined || payload.args.constructor !== Array) {

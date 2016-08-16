@@ -111,7 +111,7 @@ describe('Worker Module', function () {
             args: [1, 2]
           }
 
-          const payload = JSON.parse(process.send.getCall(0).args)
+          const payload = process.send.getCall(0).args[0]
 
           assert.strictEqual(process.send.calledOnce, true)
           assert.deepStrictEqual(payload, expectedPayload)
@@ -173,7 +173,7 @@ describe('Worker Module', function () {
             args: [1, 2]
           }
 
-          process.emit('message', JSON.stringify(payload))
+          process.emit('message', payload)
         })
 
         it('should trigger the workers listeners for the event emitted', function () {

@@ -105,7 +105,7 @@ function sendPayload (payload) {
     // If payload originates from a worker being traversed, don't echo the
     // payload back to it.
     if (payload.pid !== undefined && payload.pid === worker.pid) return
-    worker.send(JSON.stringify(payload))
+    worker.send(payload)
   })
 }
 
