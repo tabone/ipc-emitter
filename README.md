@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/tabone/ipc-emitter.svg?branch=master)](https://travis-ci.org/tabone/ipc-emitter)
+[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
 # ipc-emitter
 ## Installation
