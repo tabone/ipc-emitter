@@ -4,7 +4,8 @@
 const events = require('events')
 const assert = require('assert')
 const sinon = require('sinon')
-const utils = require('./libs/utils')
+const utils = require('../src/utils')
+const testUtils = require('./libs/utils')
 const ipce = require('../index')
 
 describe('Master Module', function () {
@@ -37,8 +38,8 @@ describe('Master Module', function () {
         let workerTwo = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess()
-          workerTwo = utils.mockChildProcess()
+          workerOne = testUtils.mockChildProcess()
+          workerTwo = testUtils.mockChildProcess()
 
           sinon.stub(workerOne, 'on')
           sinon.stub(workerTwo, 'on')
@@ -129,9 +130,9 @@ describe('Master Module', function () {
         let workerThree = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess(1)
-          workerTwo = utils.mockChildProcess(2)
-          workerThree = utils.mockChildProcess(3)
+          workerOne = testUtils.mockChildProcess(1)
+          workerTwo = testUtils.mockChildProcess(2)
+          workerThree = testUtils.mockChildProcess(3)
 
           master.ack(workerOne, workerTwo, workerThree)
         })
@@ -147,8 +148,8 @@ describe('Master Module', function () {
 
           it('should stop listening for any events that the forgotten workers might emit', function () {
             const payload = {
-              pid: workerOne.pid,
-              event: 'click'
+              [ utils.prefix('pid') ]: workerOne.pid,
+              [ utils.prefix('event') ]: 'click'
             }
 
             workerOne.mockSend(payload)
@@ -163,7 +164,7 @@ describe('Master Module', function () {
         let listener = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess(1)
+          workerOne = testUtils.mockChildProcess(1)
           listener = sinon.stub()
           workerOne.on('message', listener)
 
@@ -200,18 +201,13 @@ describe('Master Module', function () {
         let workerTwo = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess()
-          workerTwo = utils.mockChildProcess()
+          workerOne = testUtils.mockChildProcess()
+          workerTwo = testUtils.mockChildProcess()
 
           sinon.stub(workerOne, 'send')
           sinon.stub(workerTwo, 'send')
 
           master.ack(workerOne, workerTwo)
-        })
-
-        afterEach(function () {
-          workerOne.send.restore()
-          workerTwo.send.restore()
         })
 
         describe('when emitting an event from the Master IPC-Emitter', function () {
@@ -226,8 +222,8 @@ describe('Master Module', function () {
 
           it('should send a payload to each of the workers', function () {
             const expectedPayload = {
-              event: 'click',
-              args: [1, 2]
+              [ utils.prefix('event') ]: 'click',
+              [ utils.prefix('args') ]: [1, 2]
             }
 
             ;[workerOne, workerTwo].forEach((worker) => {
@@ -253,8 +249,8 @@ describe('Master Module', function () {
         let workerTwo = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess(0)
-          workerTwo = utils.mockChildProcess(1)
+          workerOne = testUtils.mockChildProcess(0)
+          workerTwo = testUtils.mockChildProcess(1)
 
           sinon.stub(workerOne, 'send')
           sinon.stub(workerTwo, 'send')
@@ -271,7 +267,7 @@ describe('Master Module', function () {
             events.prototype.emit.restore()
           })
 
-          it('should not send the payload to the workers', function () {
+          it('should not send the payload to the other workers', function () {
             workerOne.mockSend('{"invalid": "payload"}')
             assert.strictEqual(workerOne.send.called, false)
             assert.strictEqual(workerTwo.send.called, false)
@@ -297,8 +293,8 @@ describe('Master Module', function () {
         let workerTwo = null
 
         beforeEach(function () {
-          workerOne = utils.mockChildProcess(0)
-          workerTwo = utils.mockChildProcess(1)
+          workerOne = testUtils.mockChildProcess(0)
+          workerTwo = testUtils.mockChildProcess(1)
 
           sinon.stub(workerOne, 'send')
           sinon.stub(workerTwo, 'send')
@@ -312,9 +308,9 @@ describe('Master Module', function () {
 
           beforeEach(function () {
             payload = {
-              pid: workerOne.pid,
-              event: 'click',
-              args: [1, 2]
+              [ utils.prefix('pid') ]: workerOne.pid,
+              [ utils.prefix('event') ]: 'click',
+              [ utils.prefix('args') ]: [1, 2]
             }
 
             workerOne.mockSend(payload)
@@ -322,7 +318,7 @@ describe('Master Module', function () {
 
           it('should trigger the masters listeners for the event emitted', function () {
             assert.strictEqual(listener.calledOnce, true)
-            assert.deepStrictEqual(listener.getCall(0).args, payload.args)
+            assert.deepStrictEqual(listener.getCall(0).args, payload[utils.prefix('args')])
           })
 
           it('should send the payload to the workers who did not create the event', function () {

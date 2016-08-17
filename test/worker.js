@@ -5,6 +5,7 @@ const path = require('path')
 const events = require('events')
 const assert = require('assert')
 const sinon = require('sinon')
+const utils = require('../src/utils')
 const ipce = require('../index')
 
 describe('Worker Module', function () {
@@ -66,7 +67,7 @@ describe('Worker Module', function () {
           assert.strictEqual(process.on.getCall(0).args[0], 'message')
         })
 
-        it('should return the same object', function () {
+        it('should always return the same object', function () {
           const {worker: workerOne} = ipce
           assert.strictEqual(workerOne, worker)
         })
@@ -106,9 +107,9 @@ describe('Worker Module', function () {
 
         it('should send a payload to the master process', function () {
           const expectedPayload = {
-            pid: process.pid,
-            event: 'click',
-            args: [1, 2]
+            [ utils.prefix('pid') ]: process.pid,
+            [ utils.prefix('event') ]: 'click',
+            [ utils.prefix('args') ]: [1, 2]
           }
 
           const payload = process.send.getCall(0).args[0]
@@ -169,8 +170,8 @@ describe('Worker Module', function () {
 
         beforeEach(function () {
           payload = {
-            event: 'click',
-            args: [1, 2]
+            [ utils.prefix('event') ]: 'click',
+            [ utils.prefix('args') ]: [1, 2]
           }
 
           process.emit('message', payload)

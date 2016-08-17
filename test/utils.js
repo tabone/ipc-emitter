@@ -5,12 +5,37 @@ const assert = require('assert')
 const utils = require('../src/utils')
 
 describe('Utilities', function () {
+  describe('Scenario: Prefixing words', function () {
+    describe('Given a word', function () {
+      let word = null
+
+      beforeEach(function () {
+        word = 'luca'
+      })
+
+      describe('when prefixed', function () {
+        let prefixedWord = null
+
+        beforeEach(function () {
+          prefixedWord = utils.prefix(word)
+        })
+
+        it('should be prefixed with \'IPCE_\'', function () {
+          assert.strictEqual(prefixedWord, `IPCE_${word}`)
+        })
+      })
+    })
+  })
+
   describe('Scenario: Parsing payload', function () {
-    describe('Given an invalid payload', function () {
+    const eventKey = utils.prefix('event')
+    const argsKey = utils.prefix('args')
+
+    describe('Given a payload which is not an object', function () {
       let payload = null
 
       beforeEach(function () {
-        payload = '{ "event": "click" }'
+        payload = '{ "IPCE_event": "click" }'
       })
 
       describe('when parsing the payload', function () {
@@ -20,10 +45,10 @@ describe('Utilities', function () {
       })
     })
 
-    describe('Given a valid payload', function () {
+    describe('Given a payload who is an object', function () {
       let payload = null
 
-      describe('without an \'event\' field', function () {
+      describe('without a prefixed \'event\' field', function () {
         beforeEach(function () {
           payload = {}
         })
@@ -35,59 +60,59 @@ describe('Utilities', function () {
         })
       })
 
-      describe('with an \'event\' field', function () {
-        describe('and without an \'args\' field', function () {
+      describe('with an prefixed \'event\' field', function () {
+        describe('and without an prefixed \'args\' field', function () {
           beforeEach(function () {
-            payload.event = 'click'
+            payload[eventKey] = 'click'
           })
 
           describe('when parsing the payload', function () {
-            it('should return an object having the \'event\' field specified in the payload', function () {
+            it('should return an object having the prefixed \'event\' field specified in the payload', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.strictEqual(parsedPayload.event, 'click')
+              assert.strictEqual(parsedPayload[eventKey], 'click')
             })
 
-            it('should return an object having the \'args\' field as an empty array', function () {
+            it('should return an object having the prefixed \'args\' field as an empty array', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.deepStrictEqual(parsedPayload.args, [])
+              assert.deepStrictEqual(parsedPayload[argsKey], [])
             })
           })
         })
 
-        describe('and with an non-array \'args\' field', function () {
+        describe('and with a non-array prefixed \'args\' field', function () {
           beforeEach(function () {
-            payload.event = 'click'
-            payload.args = 1
+            payload[eventKey] = 'click'
+            payload[argsKey] = 1
           })
 
           describe('when parsing the payload', function () {
-            it('should return an object having the \'event\' field specified in the payload', function () {
+            it('should return an object having the prefixed \'event\' field specified in the payload', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.strictEqual(parsedPayload.event, 'click')
+              assert.strictEqual(parsedPayload[eventKey], 'click')
             })
 
-            it('should return an object having the \'args\' field as an empty array', function () {
+            it('should return an object having the prefixed \'args\' field as an empty array', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.deepStrictEqual(parsedPayload.args, [])
+              assert.deepStrictEqual(parsedPayload[argsKey], [])
             })
           })
         })
 
-        describe('and with an array \'args\' field', function () {
+        describe('and with an array prefixed \'args\' field', function () {
           beforeEach(function () {
-            payload.event = 'click'
-            payload.args = [1, 2]
+            payload[eventKey] = 'click'
+            payload[argsKey] = [1, 2]
           })
 
           describe('when parsing the payload', function () {
-            it('should return an object having the \'event\' field specified in the payload', function () {
+            it('should return an object having the prefixed \'event\' field specified in the payload', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.strictEqual(parsedPayload.event, 'click')
+              assert.strictEqual(parsedPayload[eventKey], 'click')
             })
 
-            it('should return an object having the \'args\' field specified in the payload', function () {
+            it('should return an object having the prefixed \'args\' field specified in the payload', function () {
               const parsedPayload = utils.parsePayload(payload)
-              assert.deepStrictEqual(parsedPayload.args, [1, 2])
+              assert.deepStrictEqual(parsedPayload[argsKey], [1, 2])
             })
           })
         })

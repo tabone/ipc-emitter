@@ -80,8 +80,8 @@ master.emit = function emit (ev, ...args) {
 
   // Notify all workers
   sendPayload.call(this, {
-    event: ev,
-    args: args
+    [ utils.prefix('event') ]: ev,
+    [ utils.prefix('args') ]: args
   })
 
   return this
@@ -91,20 +91,22 @@ master.emit = function emit (ev, ...args) {
  * sendPayload sends a payload to all the acknowledged workers. Note that if the
  * payload originated from a worker (payload would have the 'pid' field), the
  * payload isn't sent to the worker it originated from.
- * @param  {Number}       payload.pid   The process id of the worker which the
- *                                      payload originated from. Note that if
- *                                      the payload is sent from the master,
- *                                      this field will not be present.
- * @param  {String}       payload.event The name of the emitted event.
- * @param  {Array{Mixed}} payload.args  Arguments to be provided to the
- *                                      listeners of the emitted event.
+ * @param  {Number}       payload.IPCE_pid   The process id of the worker which
+ *                                           the payload originated from. Note
+ *                                           that if the payload is sent from
+ *                                           the master, this field will not be
+ *                                           present.
+ * @param  {String}       payload.IPCE_event The name of the emitted event.
+ * @param  {Array{Mixed}} payload.IPCE_args  Arguments to be provided to the
+ *                                           listeners of the emitted event.
  */
 function sendPayload (payload) {
   // Go through each worker and send them the payload.
   this.__workers.forEach((worker) => {
+    const pidKey = utils.prefix('pid')
     // If payload originates from a worker being traversed, don't echo the
     // payload back to it.
-    if (payload.pid !== undefined && payload.pid === worker.pid) return
+    if (payload[pidKey] !== undefined && payload[pidKey] === worker.pid) return
     worker.send(payload)
   })
 }
@@ -119,7 +121,8 @@ function handlePayload (payload) {
   if ((payload = utils.parsePayload(payload)) === null) return
 
   // Notify instance listeners.
-  events.prototype.emit.call(this, payload.event, ...payload.args)
+  events.prototype.emit.call(this, payload[utils.prefix('event')],
+    ...payload[utils.prefix('args')])
 
   // Notify all workers except the worker who emitted the event.
   sendPayload.call(this, payload)

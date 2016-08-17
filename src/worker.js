@@ -18,7 +18,8 @@ process.on('message', (payload) => {
   if ((payload = utils.parsePayload(payload)) === null) return
 
   // Notify instance listeners.
-  events.prototype.emit.call(worker, payload.event, ...payload.args)
+  events.prototype.emit.call(worker, payload[utils.prefix('event')],
+    ...payload[utils.prefix('args')])
 })
 
 /**
@@ -39,9 +40,9 @@ worker.emit = function emit (ev, ...args) {
 
   // Construct the payload.
   const payload = {
-    event: ev,
-    args: args,
-    pid: process.pid
+    [ utils.prefix('event') ]: ev,
+    [ utils.prefix('args') ]: args,
+    [ utils.prefix('pid') ]: process.pid
   }
 
   // Send payload to master process to be retrieved and handled by the master
