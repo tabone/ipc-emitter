@@ -1,6 +1,7 @@
 'use strict'
 const events = require('events')
 const utils = require('./utils')
+const marshaller = require('./marshaller')
 const worker = Object.create(events.prototype)
 
 // Prefixed fields used by IPC-Emitter.
@@ -23,6 +24,9 @@ if (!utils.isValidWorker(process)) {
 process.on('message', (payload) => {
   // Validate and parse payload
   if ((payload = utils.parsePayload(payload)) === null) return
+
+  // Unmarshal args.
+  payload[fields.args] = marshaller.unmarshal(payload[fields.args])
 
   // Notify instance listeners.
   events.prototype.emit.call(worker, payload[fields.event],
@@ -48,7 +52,7 @@ worker.emit = function emit (ev, ...args) {
   // Construct the payload.
   const payload = {
     [ fields.event ]: ev,
-    [ fields.args ]: args,
+    [ fields.args ]: marshaller.marshal(args),
     [ fields.pid ]: process.pid
   }
 
