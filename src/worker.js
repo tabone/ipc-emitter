@@ -3,6 +3,13 @@ const events = require('events')
 const utils = require('./utils')
 const worker = Object.create(events.prototype)
 
+// Prefixed fields used by IPC-Emitter.
+const fields = {
+  pid: utils.prefix('pid'),
+  args: utils.prefix('args'),
+  event: utils.prefix('event')
+}
+
 // This module should only be used within node programs which are connected to
 // an IPC Channel. When this is not the case, a warning is issued.
 if (!utils.isValidWorker(process)) {
@@ -18,8 +25,8 @@ process.on('message', (payload) => {
   if ((payload = utils.parsePayload(payload)) === null) return
 
   // Notify instance listeners.
-  events.prototype.emit.call(worker, payload[utils.prefix('event')],
-    ...payload[utils.prefix('args')])
+  events.prototype.emit.call(worker, payload[fields.event],
+    ...payload[fields.args])
 })
 
 /**
@@ -40,9 +47,9 @@ worker.emit = function emit (ev, ...args) {
 
   // Construct the payload.
   const payload = {
-    [ utils.prefix('event') ]: ev,
-    [ utils.prefix('args') ]: args,
-    [ utils.prefix('pid') ]: process.pid
+    [ fields.event ]: ev,
+    [ fields.args ]: args,
+    [ fields.pid ]: process.pid
   }
 
   // Send payload to master process to be retrieved and handled by the master

@@ -3,6 +3,13 @@ const events = require('events')
 const utils = require('./utils')
 const master = Object.create(events.prototype)
 
+// Prefixed fields used by IPC-Emitter.
+const fields = {
+  pid: utils.prefix('pid'),
+  args: utils.prefix('args'),
+  event: utils.prefix('event')
+}
+
 /**
  * ack acknowledge the existance of a child process. By doing so the master
  * will:
@@ -80,8 +87,8 @@ master.emit = function emit (ev, ...args) {
 
   // Notify all workers
   sendPayload.call(this, {
-    [ utils.prefix('event') ]: ev,
-    [ utils.prefix('args') ]: args
+    [ fields.event ]: ev,
+    [ fields.args ]: args
   })
 
   return this
@@ -103,7 +110,7 @@ master.emit = function emit (ev, ...args) {
 function sendPayload (payload) {
   // Go through each worker and send them the payload.
   this.__workers.forEach((worker) => {
-    const pidKey = utils.prefix('pid')
+    const pidKey = fields.pid
     // If payload originates from a worker being traversed, don't echo the
     // payload back to it.
     if (payload[pidKey] !== undefined && payload[pidKey] === worker.pid) return
@@ -121,8 +128,8 @@ function handlePayload (payload) {
   if ((payload = utils.parsePayload(payload)) === null) return
 
   // Notify instance listeners.
-  events.prototype.emit.call(this, payload[utils.prefix('event')],
-    ...payload[utils.prefix('args')])
+  events.prototype.emit.call(this, payload[fields.event],
+    ...payload[fields.args])
 
   // Notify all workers except the worker who emitted the event.
   sendPayload.call(this, payload)
