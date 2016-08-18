@@ -11,13 +11,21 @@ const fields = {
 
 module.exports = {
   /**
-   * List of types which IPC-Emitter handle.
+   * List of types which IPC-Emitter supports.
    * @type {Object}
    */
   types: {
     error: errorType
   },
 
+  /**
+   * unmarshal goes through each provided arg and checks whether it can
+   * unmarshal it. This is done by looking for the prefixed 'type' (determines
+   * the type of the argument) and the prefixed 'data' (determines the data
+   * which will be used to unmarshal the arg).
+   * @param  {Array[Mixed]} args Data to be checked.
+   * @return {Array[Mixed]} Unmarshalled data.
+   */
   unmarshal (args) {
     return args.map((arg) => {
       // If argument is not an object, return the arg itself.
@@ -39,6 +47,14 @@ module.exports = {
     })
   },
 
+  /**
+   * marshal goes through each provided arg and checks whether it can marshal
+   * it. This is done by going passing each arg in the 'marshallable' function
+   * of each supported type. If this function returns true, the arg is
+   * marshalled.
+   * @param  {Array[Mixed]} args Data to be checked.
+   * @return {Array[Mixed]} Marshalled data.
+   */
   marshal (args) {
     return args.map((arg) => {
       for (var key in this.types) {
