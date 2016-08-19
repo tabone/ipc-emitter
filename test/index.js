@@ -1,5 +1,5 @@
 'use strict'
 
-;['master', 'worker', 'utils', 'types/error'].forEach((file) => {
+;['master', 'worker', 'utils', 'marshaller', 'types/error'].forEach((file) => {
   require(`./${file}`)
 })
