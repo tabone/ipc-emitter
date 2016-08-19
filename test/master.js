@@ -9,6 +9,12 @@ const testUtils = require('./libs/utils')
 const ipce = require('../index')
 
 describe('Master Module', function () {
+  const fields = {
+    pid: utils.prefix('pid'),
+    event: utils.prefix('event'),
+    args: utils.prefix('args')
+  }
+
   describe('Scenario: Requiring the Master IPC-Emitter', function () {
     describe('When getting a Master IPC-Emitter', function () {
       it('should always return a different object', function () {
@@ -148,8 +154,8 @@ describe('Master Module', function () {
 
           it('should stop listening for any events that the forgotten workers might emit', function () {
             const payload = {
-              [ utils.prefix('pid') ]: workerOne.pid,
-              [ utils.prefix('event') ]: 'click'
+              [ fields.pid ]: workerOne.pid,
+              [ fields.event ]: 'click'
             }
 
             workerOne.mockSend(payload)
@@ -222,8 +228,8 @@ describe('Master Module', function () {
 
           it('should send a payload to each of the workers', function () {
             const expectedPayload = {
-              [ utils.prefix('event') ]: 'click',
-              [ utils.prefix('args') ]: [1, 2]
+              [ fields.event ]: 'click',
+              [ fields.args ]: [1, 2]
             }
 
             ;[workerOne, workerTwo].forEach((worker) => {
@@ -308,9 +314,9 @@ describe('Master Module', function () {
 
           beforeEach(function () {
             payload = {
-              [ utils.prefix('pid') ]: workerOne.pid,
-              [ utils.prefix('event') ]: 'click',
-              [ utils.prefix('args') ]: [1, 2]
+              [ fields.pid ]: workerOne.pid,
+              [ fields.event ]: 'click',
+              [ fields.args ]: [1, 2]
             }
 
             workerOne.mockSend(payload)
@@ -318,7 +324,7 @@ describe('Master Module', function () {
 
           it('should trigger the masters listeners for the event emitted', function () {
             assert.strictEqual(listener.calledOnce, true)
-            assert.deepStrictEqual(listener.getCall(0).args, payload[utils.prefix('args')])
+            assert.deepStrictEqual(listener.getCall(0).args, payload[fields.args])
           })
 
           it('should send the payload to the workers who did not create the event', function () {

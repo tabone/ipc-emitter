@@ -9,6 +9,12 @@ const utils = require('../src/utils')
 const ipce = require('../index')
 
 describe('Worker Module', function () {
+  const fields = {
+    pid: utils.prefix('pid'),
+    event: utils.prefix('event'),
+    args: utils.prefix('args')
+  }
+
   beforeEach(function () {
     // There is some code that should run when the worker is first required. So
     // in order for this code to run in each test case, the cache is removed.
@@ -107,9 +113,9 @@ describe('Worker Module', function () {
 
         it('should send a payload to the master process', function () {
           const expectedPayload = {
-            [ utils.prefix('pid') ]: process.pid,
-            [ utils.prefix('event') ]: 'click',
-            [ utils.prefix('args') ]: [1, 2]
+            [ fields.pid ]: process.pid,
+            [ fields.event ]: 'click',
+            [ fields.args ]: [1, 2]
           }
 
           const payload = process.send.getCall(0).args[0]
@@ -170,8 +176,8 @@ describe('Worker Module', function () {
 
         beforeEach(function () {
           payload = {
-            [ utils.prefix('event') ]: 'click',
-            [ utils.prefix('args') ]: [1, 2]
+            [ fields.event ]: 'click',
+            [ fields.args ]: [1, 2]
           }
 
           process.emit('message', payload)
