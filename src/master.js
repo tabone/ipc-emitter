@@ -12,6 +12,27 @@ const fields = {
 }
 
 /**
+ * echo configures the master instance to echo any events retrieved by its
+ * workers to its own master.
+ */
+master.echo = function echo () {
+  if (!utils.isValidWorker(process)) {
+    console.warn('master is not a worker')
+    return
+  }
+
+  this.__echoEvents = true
+}
+
+/**
+ * stopEcho configures the master instance to stop echoing the events retrieved
+ * by its workers to its own master.
+ */
+master.stopEcho = function stopEcho () {
+  delete this.__echoEvents
+}
+
+/**
  * ack acknowledge the existance of a child process. By doing so the master
  * will:
  *   1. Listen for events it emits so that it can inform others.
@@ -140,6 +161,10 @@ function handlePayload (payload) {
 
   // Notify all workers except the worker who emitted the event.
   sendPayload.call(this, payload)
+
+  // If the master is configured to echo events to its own master, the event
+  // emitted by the worker should be echoed to the master.
+  if (this.__echoEvents === true) process.send(payload)
 }
 
 module.exports = master

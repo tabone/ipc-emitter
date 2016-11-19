@@ -339,4 +339,141 @@ describe('Master Module', function () {
       })
     })
   })
+
+  describe('Scenario: Configuring a master to echo events when it is not a worker', function () {
+    describe('Given a Master IPC-Emitter', function () {
+      let master = null
+
+      beforeEach(function () {
+        sinon.stub(console, 'warn')
+        ;({master} = ipce)
+      })
+
+      afterEach(function () {
+        console.warn.restore()
+      })
+
+      describe('when configured to echo events', function () {
+        beforeEach(function () {
+          master.echo()
+        })
+
+        it('should warn the user', function () {
+          assert.strictEqual(console.warn.calledOnce, true)
+        })
+      })
+    })
+  })
+
+  describe('Scenario: Configuring a master to echo events when it is a worker', function () {
+    describe('Given a Master IPC-Emitter', function () {
+      let master = null
+
+      beforeEach(function () {
+        ;({master} = ipce)
+        process.send = function () {}
+        sinon.stub(console, 'warn')
+      })
+
+      afterEach(function () {
+        delete process.send
+        console.warn.restore()
+      })
+
+      describe('when configured to echo events', function () {
+        beforeEach(function () {
+          master.echo()
+        })
+
+        it('should not warn the user', function () {
+          assert.strictEqual(console.warn.calledOnce, false)
+        })
+
+        it('should configure the master object to echo events', function () {
+          assert.strictEqual(master.__echoEvents, true)
+        })
+      })
+    })
+  })
+
+  describe('Scenario: Configuring a master to stop echoing events', function () {
+    describe('Given a Master IPC-Emitter', function () {
+      let master = null
+
+      beforeEach(function () {
+        ;({master} = ipce)
+        process.send = function () {}
+      })
+
+      afterEach(function () {
+        delete process.send
+      })
+
+      describe('which is configured to echo events', function () {
+        beforeEach(function () {
+          master.echo()
+        })
+
+        describe('when it is configured to stop echoing events', function () {
+          beforeEach(function () {
+            master.stopEcho()
+          })
+
+          it('should configure the master object to echo events', function () {
+            assert.strictEqual(master.__echoEvents, undefined)
+          })
+        })
+      })
+    })
+  })
+
+  describe('Scenario: Retrieving a payload with a master configured to echo events to its own master', function () {
+    describe('Given a Master IPC-Emitter', function () {
+      let master = null
+
+      beforeEach(function () {
+        ;({master} = ipce)
+        process.send = sinon.spy()
+      })
+
+      afterEach(function () {
+        delete process.send
+      })
+
+      describe('which is configured to echo events', function () {
+        beforeEach(function () {
+          master.echo()
+        })
+
+        describe('and knows about a worker', function () {
+          let workerOne = null
+
+          beforeEach(function () {
+            workerOne = testUtils.mockChildProcess(0)
+            sinon.stub(workerOne, 'send')
+            master.ack(workerOne)
+          })
+
+          describe('when a worker process sends a valid payload', function () {
+            let payload = null
+
+            beforeEach(function () {
+              payload = {
+                [ fields.pid ]: workerOne.pid,
+                [ fields.event ]: 'click',
+                [ fields.args ]: [1, 2]
+              }
+
+              workerOne.mockSend(payload)
+            })
+
+            it('should echo the payload to its own master', function () {
+              assert.strictEqual(process.send.callCount, 1)
+              assert.strictEqual(process.send.getCall(0).args[0], payload)
+            })
+          })
+        })
+      })
+    })
+  })
 })

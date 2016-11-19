@@ -29,10 +29,18 @@ Acknowledges a process. Doing so the Master:
 2. Will notify the newly acknowledged process of any events emitted either the master or other acknowledged processes.
 
 #### .forget( [process](https://nodejs.org/api/process.html) [, [process](https://nodejs.org/api/process.html)[...] ] )
-Removes a process from the list of acknowledged processes. Doing so the master:
+Removes a process from the list of acknowledged processes. Doing so the Master:
 
 1. Will stop listening for any events the newly forgotten process might emit.
-2. Will stop notifing the newly forgotten process of any events emitted either by the master or other acknowledged processes .
+2. Will stop notifing the newly forgotten process of any events emitted either by the master or other acknowledged processes.
+
+#### .echo()
+Configures the Master to echo events retrieved by its workers, to its own Master. 
+
+> When a Master which is not a Worker is configured to echo events, the user is warned.
+
+#### .stopEcho()
+Configures the Master to stop echoing events retrieved by its workers, to its own Master. 
 
 ## Worker
 

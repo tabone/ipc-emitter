@@ -1,6 +1,6 @@
 {
   "name": "ipc-emitter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "EventEmitter for IPC connected node apps.",
   "main": "index.js",
   "scripts": {

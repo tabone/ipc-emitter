@@ -24,14 +24,6 @@ describe('Worker Module', function () {
     process.removeAllListeners()
   })
 
-  describe('Node Compatibility Check', function () {
-    describe('Global process object', function () {
-      it('should not have the \'.send()\' function', function () {
-        assert.strictEqual(process.send, undefined)
-      })
-    })
-  })
-
   describe('Scenario: Requiring a Worker IPC-Emitter', function () {
     beforeEach(function () {
       sinon.stub(console, 'warn')
