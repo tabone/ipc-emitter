@@ -5,6 +5,7 @@
   'worker',
   'utils',
   'marshaller',
-  'types/error'].forEach((file) => {
+  'types/error']
+.forEach((file) => {
   require(`./${file}`)
 })
