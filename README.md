@@ -37,7 +37,7 @@ Removes a process from the list of acknowledged processes. Doing so the Master:
 #### .echo()
 Configures the Master to echo events retrieved by its workers, to its own Master. 
 
-> When a Master which is not a Worker is configured to echo events, the user is warned.
+> When a Master is configured to echo events, if it is not a Worker the user is warned.
 
 #### .stopEcho()
 Configures the Master to stop echoing events retrieved by its workers, to its own Master. 
