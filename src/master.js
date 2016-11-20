@@ -154,7 +154,14 @@ function handlePayload (payload) {
 
   // If the master is configured to echo events to its own master, the event
   // emitted by the worker should be echoed to the master.
-  if (this.__echoEvents === true) process.send(payload)
+  if (this.__echoEvents === true) {
+    const echoPayload = JSON.parse(JSON.stringify(payload))
+    // Update PID as if the payload is originating from this process, the master
+    // is in. If this is not done, the master of this process, will resend the
+    // payload since the PID is different.
+    echoPayload[fields.pid] = process.pid
+    process.send(echoPayload)
+  }
 
   // Unmarshal args.
   payload[fields.args] = marshaller.unmarshal(payload[fields.args])

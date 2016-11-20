@@ -470,7 +470,11 @@ describe('Master Module', function () {
 
             it('should echo the payload to its own master', function () {
               assert.strictEqual(process.send.callCount, 1)
-              assert.strictEqual(process.send.getCall(0).args[0], payload)
+              assert.deepStrictEqual(process.send.getCall(0).args[0], {
+                [ fields.pid ]: process.pid,
+                [ fields.event ]: 'click',
+                [ fields.args ]: [1, 2]
+              })
             })
           })
         })
@@ -533,7 +537,7 @@ describe('Master Module', function () {
             it('should echo the payload to its own master', function () {
               assert.strictEqual(process.send.callCount, 1)
               assert.deepStrictEqual(payloadSent, {
-                [ fields.pid ]: workerOne.pid,
+                [ fields.pid ]: process.pid,
                 [ fields.event ]: 'click',
                 [ fields.args ]: [1, 2]
               })
