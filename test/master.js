@@ -4,6 +4,7 @@
 const events = require('events')
 const assert = require('assert')
 const sinon = require('sinon')
+const marshaller = require('../src/marshaller')
 const utils = require('../src/utils')
 const testUtils = require('./libs/utils')
 const ipce = require('../index')
@@ -470,6 +471,72 @@ describe('Master Module', function () {
             it('should echo the payload to its own master', function () {
               assert.strictEqual(process.send.callCount, 1)
               assert.strictEqual(process.send.getCall(0).args[0], payload)
+            })
+          })
+        })
+      })
+    })
+  })
+
+  describe('Scenario: Retrieving a marshallable payload with a master configured to echo events to its own master', function () {
+    describe('Given a Master IPC-Emitter', function () {
+      let master = null
+      let payloadSent = null
+
+      beforeEach(function () {
+        ;({master} = ipce)
+
+        process.send = function (payload) {
+          payloadSent = JSON.parse(JSON.stringify(payload))
+        }
+
+        sinon.spy(process, 'send')
+      })
+
+      afterEach(function () {
+        delete process.send
+      })
+
+      describe('which is configured to echo events', function () {
+        beforeEach(function () {
+          master.echo()
+        })
+
+        describe('and knows about a worker', function () {
+          let workerOne = null
+
+          beforeEach(function () {
+            workerOne = testUtils.mockChildProcess(0)
+            sinon.stub(workerOne, 'send')
+            master.ack(workerOne)
+          })
+
+          describe('when a worker process sends a valid and marshallable payload', function () {
+            let payload = null
+
+            beforeEach(function () {
+              sinon.stub(marshaller, 'unmarshal').returns(['test'])
+
+              payload = {
+                [ fields.pid ]: workerOne.pid,
+                [ fields.event ]: 'click',
+                [ fields.args ]: [1, 2]
+              }
+
+              workerOne.mockSend(payload)
+            })
+
+            afterEach(function () {
+              marshaller.unmarshal.restore()
+            })
+
+            it('should echo the payload to its own master', function () {
+              assert.strictEqual(process.send.callCount, 1)
+              assert.deepStrictEqual(payloadSent, {
+                [ fields.pid ]: workerOne.pid,
+                [ fields.event ]: 'click',
+                [ fields.args ]: [1, 2]
+              })
             })
           })
         })

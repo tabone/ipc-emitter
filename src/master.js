@@ -152,6 +152,10 @@ function handlePayload (payload) {
   // Parse and validate received payload.
   if ((payload = utils.parsePayload(payload)) === null) return
 
+  // If the master is configured to echo events to its own master, the event
+  // emitted by the worker should be echoed to the master.
+  if (this.__echoEvents === true) process.send(payload)
+
   // Unmarshal args.
   payload[fields.args] = marshaller.unmarshal(payload[fields.args])
 
@@ -161,10 +165,6 @@ function handlePayload (payload) {
 
   // Notify all workers except the worker who emitted the event.
   sendPayload.call(this, payload)
-
-  // If the master is configured to echo events to its own master, the event
-  // emitted by the worker should be echoed to the master.
-  if (this.__echoEvents === true) process.send(payload)
 }
 
 module.exports = master
