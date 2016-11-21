@@ -581,7 +581,6 @@ describe('Master Module', function () {
         })
 
         it('should not listen for payloads sent by its master', function () {
-          console.log(process.on)
           assert.strictEqual(process.on.notCalled, true)
         })
       })
