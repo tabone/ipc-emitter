@@ -71,7 +71,7 @@ describe('Worker Module', function () {
         })
 
         it('should not warn the user', function () {
-          assert.strictEqual(console.warn.calledOnce, false)
+          assert.strictEqual(console.warn.notCalled, true)
         })
       })
     })
@@ -119,7 +119,7 @@ describe('Worker Module', function () {
     })
   })
 
-  describe('Scenario: Retreiving invalid payloads from the master process', function () {
+  describe('Scenario: Retrieving invalid payloads from the master process', function () {
     describe('Given a Worker IPC-Emitter', function () {
       beforeEach(function () {
         process.send = function () {}
@@ -130,7 +130,7 @@ describe('Worker Module', function () {
         delete process.send
       })
 
-      describe('when an invalid payload is retreived from the master process', function () {
+      describe('when an invalid payload is retrieved from the master process', function () {
         let payload = null
 
         beforeEach(function () {
@@ -147,7 +147,7 @@ describe('Worker Module', function () {
     })
   })
 
-  describe('Scenario: Retreiving valid payloads from the master process', function () {
+  describe('Scenario: Retrieving valid payloads from the master process', function () {
     describe('Given a Worker IPC-Emitter', function () {
       let worker = null
       let listener = null
@@ -163,7 +163,7 @@ describe('Worker Module', function () {
         delete process.send
       })
 
-      describe('when a valid payload is retreived from the master process', function () {
+      describe('when a valid payload is retrieved from the master process', function () {
         let payload = null
 
         beforeEach(function () {

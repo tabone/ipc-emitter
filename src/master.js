@@ -12,12 +12,31 @@ const fields = {
 }
 
 /**
- * echo configures the master instance to echo any events retrieved by its
- * workers to its own master.
+ * echo configures the instance to:
+ *   1. Echo payloads retrieved by its master to its workers.
+ *   2. Echo payloads retrieved by its workers to its master.
  */
 master.echo = function echo () {
+  this.echoUp()
+  this.echoDown()
+}
+
+/**
+ * stopEcho configures the instance to stop echoing payloads.
+ */
+master.stopEcho = function stopEcho () {
+  this.stopEchoUp()
+  this.stopEchoDown()
+}
+
+/**
+ * echoUp configures the instance to echo payloads retrieved by its workers to
+ * its own master.
+ */
+master.echoUp = function echoUp () {
   if (!utils.isValidWorker(process)) {
-    console.warn('master is not a worker')
+    console.warn('master is not a worker and therefore cannot recieve ' +
+      'payloads by a master')
     return
   }
 
@@ -25,11 +44,48 @@ master.echo = function echo () {
 }
 
 /**
- * stopEcho configures the master instance to stop echoing the events retrieved
- * by its workers to its own master.
+ * stopEchoUp configures the instance to stop echoing the payloads retrieved by
+ * its workers to its own master.
  */
-master.stopEcho = function stopEcho () {
+master.stopEchoUp = function stopEchoUp () {
   delete this.__echoEvents
+}
+
+/**
+ * echoDown configures the instance to echo payloads retrieved by its own
+ * master to its workers.
+ */
+master.echoDown = function echoDown () {
+  if (!utils.isValidWorker(process)) {
+    console.warn('master is not a worker and therefore cannot send payloads ' +
+      'to a master')
+    return
+  }
+
+  // Store listener to be used in the process 'message' event. This is done so
+  // that when the user configures the instance to stop echoing down events from
+  // its own master, the listener can be referenced and removed without
+  // affecting other listeners registered.
+  if (this.__handleMasterPayloadListener === undefined) {
+    this.__handleMasterPayloadListener = handleMasterPayload.bind(this)
+  }
+
+  // Make sure that there is only one listener.
+  const alreadyListening = process.listeners('message')
+    .indexOf(this.__handleMasterPayloadListener) !== -1
+
+  if (alreadyListening) return
+
+  // Listen for messages from the master.
+  process.on('message', this.__handleMasterPayloadListener)
+}
+
+/**
+ * stopEchoDown configures the instance to stop echoing the payloads retrieved
+ * by its own master to its workers.
+ */
+master.stopEchoDown = function stopEchoDown () {
+  process.removeListener('message', this.__handleMasterPayloadListener)
 }
 
 /**
@@ -49,8 +105,8 @@ master.ack = function ack (...workers) {
   // Store listener to be used in the workers 'message' event. This is done so
   // that when a worker is forgotten, the listener can be referenced and removed
   // without affecting other listeners registered.
-  if (this.__handlePayloadListener === undefined) {
-    this.__handlePayloadListener = handlePayload.bind(this)
+  if (this.__handleWorkerPayloadListener === undefined) {
+    this.__handleWorkerPayloadListener = handleWorkerPayload.bind(this)
   }
 
   // Traverse the workers provided and include the valid child processes in the
@@ -62,7 +118,7 @@ master.ack = function ack (...workers) {
     }
 
     // Listen for messages from the worker to be acknowledged.
-    worker.on('message', this.__handlePayloadListener)
+    worker.on('message', this.__handleWorkerPayloadListener)
 
     // Include worker in the list of acknowledged workers.
     this.__workers.push(worker)
@@ -84,7 +140,7 @@ master.forget = function forget (...workers) {
   // Traverse the specified workers and remove them from the acknowledged list.
   workers.forEach((worker) => {
     // Remove the listeners created by the master IPC.
-    worker.removeListener('message', this.__handlePayloadListener)
+    worker.removeListener('message', this.__handleWorkerPayloadListener)
     // Remove from acknowledged workers.
     this.__workers.splice(this.__workers.indexOf(worker), 1)
   })
@@ -144,11 +200,26 @@ function sendPayload (payload) {
 }
 
 /**
- * handlePayload handles the payload received by a worker. If payload is valid
- * it is echoed back to all workers except the worker that it was received from
+ * handleMasterPayload handles the payload recieved by the master process. If
+ * payload is valid it is echoed back to all workers. Note that unlike the
+ * handleWorkerPayload the listeners of the instance won't be notified.
  * @param  {String} payload Payload received from a worker.
  */
-function handlePayload (payload) {
+function handleMasterPayload (payload) {
+  // Parse and validate received payload.
+  if ((payload = utils.parsePayload(payload)) === null) return
+
+  // Notify all workers except the worker who emitted the event.
+  sendPayload.call(this, payload)
+}
+
+/**
+ * handleWorkerPayload handles the payload received by a worker. If payload is
+ * valid it is echoed back to all workers except the worker that it was received
+ * from.
+ * @param  {String} payload Payload received from a worker.
+ */
+function handleWorkerPayload (payload) {
   // Parse and validate received payload.
   if ((payload = utils.parsePayload(payload)) === null) return
 
