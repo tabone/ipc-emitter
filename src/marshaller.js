@@ -29,7 +29,7 @@ module.exports = {
   unmarshal (args) {
     return args.map((arg) => {
       // If argument is not an object, return the arg itself.
-      if (typeof arg !== 'object') return arg
+      if (arg == null || typeof arg !== 'object') return arg
 
       // If argument doesn't have prefixed 'type' and 'data', the arg wasn't
       // created by IPC-Emitter and therefore should return the arg itself.

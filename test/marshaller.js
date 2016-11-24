@@ -103,6 +103,24 @@ describe('Marshaller Module', function () {
     })
   })
 
+  describe('Scenario: Unmarshalling null arguments', function () {
+    describe('Given a null arg', function () {
+      let arg = null
+
+      describe('when unmarshalled', function () {
+        let result = null
+
+        beforeEach(function () {
+          result = marshaller.unmarshal([arg])
+        })
+
+        it('should return the arg as it is', function () {
+          assert.deepStrictEqual([arg], result)
+        })
+      })
+    })
+  })
+
   describe('Scenario: Unmarshalling a non marshalled object', function () {
     describe('Given an object arg without the prefixed \'type\' and \'data\' fields', function () {
       let arg = null
