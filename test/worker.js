@@ -36,7 +36,9 @@ describe('Worker Module', function () {
     describe('Given a master process (non-forked environment)', function () {
       describe('when getting the Worker IPC-Emitter', function () {
         it('should warn the user', function () {
-          ipce.worker
+          /* eslint-disable no-unused-vars */
+          const worker = ipce.worker
+          /* eslint-enable no-unused-vars */
           assert.strictEqual(console.warn.calledOnce, true)
         })
       })
@@ -123,7 +125,9 @@ describe('Worker Module', function () {
     describe('Given a Worker IPC-Emitter', function () {
       beforeEach(function () {
         process.send = function () {}
-        ipce.worker
+        /* eslint-disable no-unused-vars */
+        const worker = ipce.worker
+        /* eslint-enable no-unused-vars */
       })
 
       afterEach(function () {
